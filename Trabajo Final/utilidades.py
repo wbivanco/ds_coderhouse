@@ -1,6 +1,63 @@
+
 """
 Sección: Gráficos
 """
+def graficar_nulos_msno(df):
+    """
+    Función: Grafica de los nulos de todo el dataframe.
+    Input: Dataframe con la info.
+    Output: Gráfica con la librería msno.
+    """
+    
+    import missingno as msno
+
+    msno.matrix(df)
+
+
+def graficar_mapa_calor_msno(df):
+    """
+    Función: Grafica un mapa de calor de las variables del dataframe.
+    Input: Dataframe con la info.
+    Output: Gráfica de mapa de calor con la librería msno.
+    """
+    
+    import missingno as msno
+
+    msno.heatmap(df)
+
+
+def graficar_porcentajes_nulos(nulos):
+    """
+    Función: Grafica en barras la serie recibida con los nulos.
+    Input: Serie con los datos de los nulos a graficar.
+    Output: Gráfica de barras.
+    """
+
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(10, 6))
+    nulos.plot(kind='bar')
+
+
+def graficar_outliers(df, outliers=True):
+    """
+    Función: Grafica boxplot con o sin atípicos del dataframe según el valor del parámetro enviado.
+    Input: Dataframe con la info y Booleano indicando si quiere o no con outliers.
+    Output: Gráfica de boxplot.
+    """
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    plt.figure(figsize=(14, 6))
+    if(outliers):
+        titulo = 'Variables numéricas con atípicos'
+        color = 'green'
+    else:
+        titulo = 'Variables numéricas sin atípicos'
+        color = 'turquoise'
+    sns.boxplot(data=df, showfliers=outliers, color=color).set(title=titulo)    
+
+
 def formatear_autopct(data):
     """
     Función: Permite agregar al piechart, info de la cantidad en número de cada porción del piechart, no solo los 
@@ -31,7 +88,7 @@ def calcular_mad(data, axis=None):
     return mean(absolute(data - mean(data, axis)), axis)
 
 
-def calular_porcentajes_nulos(df):
+def calcular_porcentajes_nulos(df):
     """
     Función: Calcula el porcentaje de nulos de un df.
     Input: Dataframe
@@ -105,13 +162,14 @@ def forward_selection(X, y, significance_level=0.01):
 """
 Sección: Métricas, cálculo e impresión
 """
-def metricas_clasificacion(y_test, y_pred, y_pred_prob):
+def ver_metricas_clasificacion(y_test, y_pred, y_pred_prob):
     """ 
     Función: muestra los valores de las métricas para los algoritmos de clasificación.
     Input: Serie con la columna target de prueba(y_test), Serie con la columna predecida(y_pred), Serie con la columna
     predecida probable(y_pred_prob).
     Output: Impresión de las métricas.
     """
+
     from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve, classification_report, precision_score, recall_score
 
 
@@ -128,3 +186,20 @@ def metricas_clasificacion(y_test, y_pred, y_pred_prob):
     print("Recall : ", recall)
     print('ROC AUC Score:', roc_auc_score(y_test, y_pred_prob))
     print()
+
+
+"""
+Sección: Herramientas EDA
+"""
+def generar_profile(df, titulo='Resumen'):
+    """ 
+    Función: muestra los valores de las métricas para los algoritmos de clasificación.
+    Input: Dataframe y titulo pare el reporte.
+    Output: Impresión del profile.
+    """
+
+    from pandas_profiling import ProfileReport
+
+    profile = ProfileReport(df, title=titulo)
+    profile.to_notebook_iframe()
+    #profile.to_widgets()
