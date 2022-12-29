@@ -41,10 +41,12 @@ def graficar_porcentajes_nulos(nulos):
 
 def graficar_outliers(df, outliers=True):
     """
-    Función: Grafica boxplot con o sin atípicos del dataframe según el valor del parámetro enviado.
+    Función: Grafica boxplot con o sin atípicos del dataframe según el valor del 
+    parámetro enviado.
     Input: Dataframe con la info y Booleano indicando si quiere o no con outliers.
     Output: Gráfica de boxplot.
     """
+
     import matplotlib.pyplot as plt
     import seaborn as sns
 
@@ -55,14 +57,25 @@ def graficar_outliers(df, outliers=True):
     else:
         titulo = 'Variables numéricas sin atípicos'
         color = 'turquoise'
-    sns.boxplot(data=df, showfliers=outliers, color=color).set(title=titulo)    
+    sns.boxplot(data=df, showfliers=outliers, color=color).set(title=titulo)  
+
+def graficar_distribucion_datos(data, cantidad_barras=7):
+    """
+    Función: Grafica un histograma de la columna pasada como parámetro.
+    Input: Serie con la columna a graficar.
+    Output: Gráfica de histograma.
+    """
+    
+    import matplotlib.pyplot as plt
+
+    plt.hist(data, bins=cantidad_barras)  
 
 
 def formatear_autopct(data):
     """
-    Función: Permite agregar al piechart, info de la cantidad en número de cada porción del piechart, no solo los 
-    porcentajes. Para que no dé error la función se debe llamar my_format y debe recibir pct como argumento
-    por defecto.
+    Función: Permite agregar al piechart, info de la cantidad en número de cada porción 
+    del piechart, no solo los porcentajes. Para que no dé error la función se debe 
+    llamar my_format y debe recibir pct como argumento por defecto.
     Input: Serie con la columna a graficar.
     Output: Serie con los datos formateados.
     """
@@ -85,13 +98,15 @@ def calcular_mad(data, axis=None):
     Output: Número flotante.
     """
 
+    from numpy import mean, absolute
+
     return mean(absolute(data - mean(data, axis)), axis)
 
 
 def calcular_porcentajes_nulos(df):
     """
     Función: Calcula el porcentaje de nulos de un df.
-    Input: Dataframe
+    Input: Dataframe.
     Ouput: Serie con los porcentajes de nulos.
     """
 
@@ -102,12 +117,109 @@ def calcular_porcentajes_nulos(df):
     return porcen_nulos
 
 
+def calcular_medidas_tendencia_central(data):
+    """
+    Función: Para un columna numérica calcula: resumen estadístico, media geométrica,
+    media armónica, media recortada y la moda.
+    Input: Serie con la columna a realizar los cálculos.
+    Ouput: Impresión de los cálculos.
+    """
+
+    from scipy import stats
+    import warnings
+
+    # Deshabilito los warnings
+    warnings.filterwarnings('ignore')
+
+    print()
+    print("Impresión de Medidas de Tendencia Central")
+    print("-----------------------------------------")
+    print(f"Resumen: {stats.describe(data)}")
+    print(f"Media geométrica: {stats.gmean(data)}")
+    print(f"Media armónica: {stats.hmean(data)}")
+    print(f"Media Recortada: {stats.trim_mean(data, 0.1)}") # Proporción removida en cada cola 10%
+    print(f"Moda: {stats.mode(data)}")
+    
+
+def calcular_medidas_localizacion(data):
+    """
+    Función: Para un columna numérica calcula: percentiles, cuartiles y deciles.
+    Input: Serie con la columna a realizar los cálculos.
+    Ouput: Impresión de los cálculos.
+    """
+
+    import numpy as np
+
+    print()
+    print("Impresión de Medidas de Localización")
+    print("------------------------------------")
+    print(f"Percentiles: {np.percentile(data, [25, 75, 90])}")
+    print(f"Cuartiles: {np.percentile(data, [0, 25, 75, 100])}")
+    print(f"Deciles: {np.percentile(data, [np.arange(0, 100, 10)])}")
+  
+
+def calcular_medidas_dispercion_absolutas(data):
+    """
+    Función: Para un columna numérica calcula: varianza, desviación standard, rango 
+    intercuartílico, desviación de cuartíl y desviación absoluta media(MAD).
+    Input: Serie con la columna a realizar los cálculos.
+    Ouput: Impresión de los cálculos.
+    """
+
+    import numpy as np
+    from scipy import stats
+
+    print()
+    print("Impresión de Medidas de Disperción Absolutas")
+    print("--------------------------------------------")
+    print(f"Varianza: {stats.describe(data)[3]}")
+    print(f"Desvicaión standard: {np.sqrt(stats.describe(data)[3])}")
+    print(f"Rango intercuartílico: {stats.iqr(data) }")
+    print(f"Desviación del cuartíl: {(np.percentile(data, 75)-np.percentile(data, 25))/2}")
+    print(f"Desviación absoluta media(MAD): {calcular_mad(data)}")
+  
+
+def calcular_medidas_dispercion_relativas(data):
+    """
+    Función: Para un columna numérica calcula: coeficiente de variación(CV), 
+    coeficiente de variación de la desviación del cuartíl y error estandar.
+    Input: Serie con la columna a realizar los cálculos.
+    Ouput: Impresión de los cálculos.
+    """
+
+    import numpy as np
+    from scipy import stats
+
+    print()
+    print("Impresión de Medidas de Disperción Relativas")
+    print("--------------------------------------------")
+    print(f"Coeficiente de variación(CV): {stats.variation(data)}")
+    print(f"Coeficiente de variación de la desvicación del cuartíl: {(np.percentile(data, 75)-np.percentile(data, 25))/(np.percentile(data, 75)+np.percentile(data, 25))}")
+    print(f"Erro standard: {stats.sem(data)}")
+    
+  
+def calcular_medidas_asimetria_curtosis(data):
+    """
+    Función: Para un columna numérica calcula: asimetría y curtosis.
+    Input: Serie con la columna a realizar los cálculos.
+    Ouput: Impresión de los cálculos.
+    """
+
+    from scipy import stats
+
+    print()
+    print("Impresión de Medidas de Asimetría y Curtosis")
+    print("--------------------------------------------")
+    print(f"Asimetría: {stats.skew(data)}")
+    print(f"Curtosis: {stats.kurtosis(data)-3}")
+    
+  
 """
 Sección: Imputación
 """
 def imputar_outliers_IQR(df):
     """
-    Función: permite aplicar el criterio de reemplazo de atípicos. Se reemplaza el
+    Función: Permite aplicar el criterio de reemplazo de atípicos. Se reemplaza el
     atípico por la mediana que es una medida robusta(no influenciada por outliers). 
     Input: Dataframe con las columnas a imputar.
     Output: Dataframe con las columnas imputadas.
@@ -131,8 +243,9 @@ Sección: Feature Selection
 def forward_selection(X, y, significance_level=0.01):
     """
     Función: Se declara función del método forward para la selección de características.
-    Input: Dataframe(X), Serie(y) que son el resultado del balanceo de variables de salida 
-    y variable con el nivel de significancia(por lo gral va entre 0.01(1%) y 0.05(5%).
+    Input: Dataframe(X), Serie(y) que son el resultado del balanceo de variables de 
+    salida y variable con el nivel de significancia(por lo gral va entre 0.01(1%) y 
+    0.05(5%).
     Output: Serie con la columnas seleccionadas.
     """
 
@@ -164,9 +277,9 @@ Sección: Métricas, cálculo e impresión
 """
 def ver_metricas_clasificacion(y_test, y_pred, y_pred_prob):
     """ 
-    Función: muestra los valores de las métricas para los algoritmos de clasificación.
-    Input: Serie con la columna target de prueba(y_test), Serie con la columna predecida(y_pred), Serie con la columna
-    predecida probable(y_pred_prob).
+    Función: Muestra los valores de las métricas para los algoritmos de clasificación.
+    Input: Serie con la columna target de prueba(y_test), Serie con la columna 
+    predecida(y_pred), Serie con la columna predecida probable(y_pred_prob).
     Output: Impresión de las métricas.
     """
 
@@ -193,7 +306,7 @@ Sección: Herramientas EDA
 """
 def generar_profile(df, titulo='Resumen'):
     """ 
-    Función: muestra los valores de las métricas para los algoritmos de clasificación.
+    Función: Muestra los valores de las métricas para los algoritmos de clasificación.
     Input: Dataframe y titulo pare el reporte.
     Output: Impresión del profile.
     """
@@ -203,3 +316,24 @@ def generar_profile(df, titulo='Resumen'):
     profile = ProfileReport(df, title=titulo)
     profile.to_notebook_iframe()
     #profile.to_widgets()
+
+
+"""
+Sección: Encoding de variables 
+"""
+def codificar_ohe(df, lista_cols):
+    """ 
+    Función: Codifica con One Hot Enecoder las columas pasadas en la lista en el 
+    dataframe pasado como otro parámetro.
+    Input: Dataframe, Lista de columnas a codificar.
+    Output: Dataframe con las columnas codificadas.
+    """
+    
+    from sklearn.preprocessing import LabelEncoder
+    
+    ohe = LabelEncoder()
+
+    for col in lista_cols:
+        df[col] = ohe.fit_transform(df[col]).astype('int32')
+    
+    return df
