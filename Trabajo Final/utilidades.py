@@ -8,8 +8,15 @@ def graficar_nulos_msno(df):
     Input: Dataframe con la info.
     Output: Gráfica con la librería msno.
     """
-    
-    import missingno as msno
+
+    import sys
+    import subprocess
+
+    # Verificar que el paquete esté instalado sino se instala.
+    try:
+        import missingno as msno
+    except ImportError:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'missingno']) 
 
     msno.matrix(df)
 
@@ -21,7 +28,14 @@ def graficar_mapa_calor_msno(df):
     Output: Gráfica de mapa de calor con la librería msno.
     """
     
-    import missingno as msno
+    import sys
+    import subprocess
+
+    # Verificar que el paquete esté instalado sino se instala.
+    try:
+        import missingno as msno
+    except ImportError:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'missingno']) 
 
     msno.heatmap(df)
 
@@ -58,6 +72,7 @@ def graficar_outliers(df, outliers=True):
         titulo = 'Variables numéricas sin atípicos'
         color = 'turquoise'
     sns.boxplot(data=df, showfliers=outliers, color=color).set(title=titulo)  
+
 
 def graficar_distribucion_datos(data, cantidad_barras=7):
     """
@@ -128,7 +143,7 @@ def calcular_medidas_tendencia_central(data):
     from scipy import stats
     import warnings
 
-    # Deshabilito los warnings
+    # Deshabilitar los warnings
     warnings.filterwarnings('ignore')
 
     print()
@@ -273,35 +288,6 @@ def forward_selection(X, y, significance_level=0.01):
 
 
 """
-Sección: Métricas, cálculo e impresión
-"""
-def ver_metricas_clasificacion(y_test, y_pred, y_pred_prob):
-    """ 
-    Función: Muestra los valores de las métricas para los algoritmos de clasificación.
-    Input: Serie con la columna target de prueba(y_test), Serie con la columna 
-    predecida(y_pred), Serie con la columna predecida probable(y_pred_prob).
-    Output: Impresión de las métricas.
-    """
-
-    from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve, classification_report, precision_score, recall_score
-
-
-    acc = accuracy_score(y_test, y_pred, normalize=True)
-    num_acc = accuracy_score(y_test, y_pred, normalize=False)
-
-    prec = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
-        
-    print("Cantidad de datos de test: ",len(y_test))
-    #print("accuracy_count : " , num_acc)
-    print("Accuracy: " , acc)
-    print("Precision : " , prec)
-    print("Recall : ", recall)
-    print('ROC AUC Score:', roc_auc_score(y_test, y_pred_prob))
-    print()
-
-
-"""
 Sección: Herramientas EDA
 """
 def generar_profile(df, titulo='Resumen'):
@@ -310,6 +296,16 @@ def generar_profile(df, titulo='Resumen'):
     Input: Dataframe y titulo pare el reporte.
     Output: Impresión del profile.
     """
+
+    import sys
+    import subprocess
+
+    # Verificar que el paquete esté instalado sino se instala.
+    try:
+        from pandas_profiling import ProfileReport
+    except ImportError:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 
+        'https://github.com/pandas-profiling/pandas-profiling/archive/master.zip']) 
 
     from pandas_profiling import ProfileReport
 
@@ -337,3 +333,113 @@ def codificar_ohe(df, lista_cols):
         df[col] = ohe.fit_transform(df[col]).astype('int32')
     
     return df
+
+"""
+Sección: Balanceo de variables 
+"""
+def balancear_oversampling(df, col, estrategia):
+    """ 
+    Función: Hace el balanceo de la variables de salida de acuerdo a la estrategia  
+    pasada como parámetro, los otros parámetros son el dataframe sin la columna 
+    objetivo y el nombre la columan objetivo por separado.ß
+    Input: Dataframe sin la columna target, String con el nombre de la columna target, un String con la estrategia.
+    Output: Dataframe y Serie con las columnas balanceadas.
+    """
+
+    import sys
+    import subprocess
+
+    # Verificar que el paquete esté instalado sino se instala.
+    try:
+        from imblearn.over_sampling import RandomOverSampler
+    except ImportError:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'imbalanced-learn']) 
+
+    oversample = RandomOverSampler(sampling_strategy='minority')
+
+    X = df.drop([col], axis=1) 
+    y = df[col] 
+
+    X_over, y_over = oversample.fit_resample(X, y) 
+
+    return X_over, y_over, X, y
+
+
+"""
+Sección: Métricas, cálculo e impresión
+"""
+def calcular_metricas_clasificacion(y_test, y_pred, y_pred_prob):
+    """ 
+    Función: Muestra los valores de las métricas para los algoritmos de clasificación.
+    Input: Serie con la columna target de prueba(y_test), Serie con la columna 
+    predecida(y_pred), Serie con la columna predecida probable(y_pred_prob).
+    Output: Impresión de las métricas.
+    """
+
+    from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, roc_curve
+
+    acc = accuracy_score(y_test, y_pred, normalize=True)
+    num_acc = accuracy_score(y_test, y_pred, normalize=False)
+
+    prec = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+
+    print()  
+    print(f"Reporte del algoritmo")
+    print("---------------------")
+    print("Cantidad de datos de test: ", len(y_test))
+    #print("accuracy_count : " , num_acc)
+    print("Accuracy: " , acc)
+    print("Precision : " , prec)
+    print("Recall : ", recall)
+    print('ROC AUC Score:', roc_auc_score(y_test, y_pred_prob))
+    print()
+
+
+"""
+Sección: Entrenar y predecir algoritmos.
+"""
+def entrenar_validar_clasificacion(lista_algoritmos, X_train, y_train, X_test, y_test):
+    """ 
+    Función: Ejecuta y calcula el train, predict, metricas y matríz de confusión para algorimos de clasificación.
+    Input: Lista de algoritmos a ejecuar, Dataframe con los datos de entrenamiento, Serie con la columna target 
+    de entrenamiento, Dataframe con los datos de test y Serie con la columna target de test.
+    Output: Impresión de métricas y matríz de confusión de cada algoritmo.
+    """
+    
+    import sys
+    import subprocess
+    import warnings
+
+    # Verificar que el paquete esté instalado sino se instala.
+    try:
+        import scikitplot as skplt
+    except ImportError:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'scikit-plot']) 
+
+    from sklearn.metrics import classification_report
+
+    # Deshabilitar los warnings
+    warnings.filterwarnings('ignore')
+
+    for model in lista_algoritmos:
+        #mod = KNeighborsClassifier(n_neighbors=2) 
+        model.fit(X_train, y_train)  
+        y_pred = model.predict(X_test) 
+        y_pred_prob = model.predict_proba(X_test)[:, 1]
+
+        print()   
+        print()     
+        print(f"Corrida del algoritmo: {model}")
+        print("----------------------")
+
+        titulo = f"Modelo: {model}"
+        skplt.metrics.plot_confusion_matrix(y_test, y_pred, figsize=(6, 6), cmap= 'YlGnBu', title=titulo)
+
+        calcular_metricas_clasificacion(y_test, y_pred, y_pred_prob)
+
+        print()        
+        print(f"Resumen de métricas")
+        print("-------------------")
+        print(classification_report(y_test, y_pred)) 
+    
